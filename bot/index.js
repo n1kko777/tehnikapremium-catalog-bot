@@ -27,7 +27,11 @@ const setup = () => {
 
   bot.command("download", (ctx) => {
     const files = fs.readdirSync("./files");
-    const xlsxFile = files.find((file) => file.endsWith(".xlsx"));
+    const xlsxFile = files.find(
+      (file) =>
+        file.includes(new Date().toLocaleDateString("ru-RU")) &&
+        file.endsWith(".xlsx")
+    );
 
     if (xlsxFile) {
       ctx.replyWithDocument({ source: `./files/${xlsxFile}` });

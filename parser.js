@@ -3,11 +3,11 @@ const cheerio = require("cheerio");
 const xl = require("excel4node");
 const fs = require("fs");
 
-function roundNumberToThousands(num, curr = 5.05) {
+function roundNumberToThousands(num, curr = 5.05, proc = 0.05) {
   const currency = Math.round((curr * 100) / 10 + 0.5) / 10;
 
   const price = num / currency;
-  let addedNum = price + price * 0.05;
+  let addedNum = price + price * proc;
   let roundedNumber = Math.round(addedNum / 100) * 100;
   return roundedNumber;
 }
@@ -107,7 +107,8 @@ async function scrapeSite(cur = 5.1) {
                 ?.trim()
                 ?.replace(/\s/g, "")
             ) ?? 0;
-          const priceRub = roundNumberToThousands(price, cur);
+          const priceRubOpt = roundNumberToThousands(price, cur, 0.05);
+          const priceRubRozn = roundNumberToThousands(price, cur, 0.25);
           const status = $(elem).find(".snippet__status").text();
 
           results.push({
@@ -116,7 +117,8 @@ async function scrapeSite(cur = 5.1) {
             category,
             title,
             price,
-            priceRub,
+            priceRubOpt,
+            priceRubRozn,
             status,
             date: new Date().toISOString(),
           });
@@ -130,7 +132,8 @@ async function scrapeSite(cur = 5.1) {
   const headingColumnNames = [
     "Наименование",
     "Категория",
-    "Цена в Руб",
+    "Опт цена в Руб",
+    "Розн цена в Руб",
     "Цена в Тенге",
     "Статус",
     "Ссылка",
@@ -143,19 +146,33 @@ async function scrapeSite(cur = 5.1) {
 
   let rowIndex = 2;
   results
-    .map(({ link, category, title, price, priceRub, status }) => ({
-      title,
-      category,
-      price: price?.toString() || "",
-      priceRub: priceRub?.toString() || "",
-      status,
-      link,
-    }))
+    .map(
+      ({
+        link,
+        category,
+        title,
+        price,
+        priceRubOpt,
+        priceRubRozn,
+        status,
+      }) => ({
+        title,
+        category,
+        priceRubOpt,
+        priceRubRozn,
+        price,
+        status,
+        link,
+      })
+    )
     .forEach((record) => {
-      let columnIndex = 1;
-      Object.keys(record).forEach((columnName) => {
-        ws.cell(rowIndex, columnIndex++).string(record[columnName]);
-      });
+      ws.cell(rowIndex, 1).string(record["title"]);
+      ws.cell(rowIndex, 2).string(record["category"]);
+      ws.cell(rowIndex, 3).number(record["priceRubOpt"]);
+      ws.cell(rowIndex, 4).number(record["priceRubRozn"]);
+      ws.cell(rowIndex, 5).number(record["price"]);
+      ws.cell(rowIndex, 6).string(record["status"]);
+      ws.cell(rowIndex, 7).link(record["link"]);
       rowIndex++;
     });
 
