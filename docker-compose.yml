@@ -1,0 +1,9 @@
+version: "3.8"
+
+services:
+  bot:
+    build: .
+    container_name: tehnikapremiumcatalogbot
+    env_file:
+      - .env
+    restart: always
