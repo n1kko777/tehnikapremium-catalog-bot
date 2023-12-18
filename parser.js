@@ -3,6 +3,19 @@ const cheerio = require("cheerio");
 const xl = require("excel4node");
 const fs = require("fs");
 
+const { scrapeCurrency } = require("./currency");
+
+function writeArrayToFile(array) {
+  const data = JSON.stringify(array);
+  fs.writeFile(`./files/data_${new Date().toISOString()}.json`, data, (err) => {
+    if (err) {
+      console.error(err);
+      return;
+    }
+    console.log("Данные успешно записан в файл data.json");
+  });
+}
+
 function roundNumberToThousands(num, curr = 5.05, proc = 0.05) {
   const currency = Math.round((curr * 100) / 10 + 0.5) / 10;
 
@@ -24,7 +37,60 @@ function getAllLinks(data) {
   return links;
 }
 
-async function scrapeSite(cur = 5.1) {
+function getDeliveryByStatus(status) {
+  if (status === "В наличии") {
+    return "1 месяц";
+  }
+
+  if (status === "Ожидается поставка") {
+    return "2 месяца";
+  }
+
+  return "более 2х месяцев";
+}
+
+async function updateItems(items) {
+  const results = [];
+  let index = 1;
+  for (const item of items) {
+    console.log(`${index}/${items.length}`);
+
+    const { data } = await axios.get(item.linkKz);
+    const $ = cheerio.load(data);
+
+    const article =
+      $(".product__article")?.text()?.replace("Артикул: ", "")?.trim() || "";
+
+    if (article) {
+      const { data: dataTeh } = await axios.get(
+        `https://tehnikapremium.ru/catalog/?q=${article}&s=Найти`
+      );
+      const $ = cheerio.load(dataTeh);
+
+      const link = $(".item_info--top_block a")?.attr("href")
+        ? `https://tehnikapremium.ru${$(".item_info--top_block a")?.attr(
+            "href"
+          )}`
+        : `https://tehnikapremium.ru/catalog/?q=${article}&s=Найти`;
+
+      results.push({
+        ...item,
+        link,
+      });
+    } else {
+      results.push(item);
+    }
+
+    await new Promise((r) => setTimeout(r, 100));
+    index++;
+  }
+
+  return results;
+}
+
+async function scrapeSite() {
+  const cur = (await scrapeCurrency()) ?? 5.1;
+
   const url = `https://shop.miele.kz/catalog/`;
 
   const { data } = await axios.get(url);
@@ -77,9 +143,42 @@ async function scrapeSite(cur = 5.1) {
 
   let links = getAllLinks(categories);
 
-  const itemsPromises = [];
+  const linksPromises = [];
 
   links.forEach((item) => {
+    linksPromises.push(
+      new Promise(async (resolve, reject) => {
+        const { data } = await axios.get(item);
+        resolve({ data, link: item });
+      })
+    );
+  });
+
+  const linksWithPages = [];
+
+  await Promise.allSettled(linksPromises).then((resps) => {
+    resps.forEach((res, index) => {
+      if (res.status === "fulfilled") {
+        const $ = cheerio.load(res.value.data);
+
+        const catalogTitle =
+          $(".catalog__header .catalog__title")?.text()?.split(" ")[1] || "0";
+        const totalPages = Math.round(Number(catalogTitle) / 24);
+
+        if (totalPages > 1) {
+          Array.from(Array(totalPages), (_, indexAr) => {
+            linksWithPages.push(`${res.value.link}?PAGEN_1=${indexAr + 1}`);
+          });
+        } else {
+          linksWithPages.push(res.value.link);
+        }
+      }
+    });
+  });
+
+  const itemsPromises = [];
+
+  linksWithPages.forEach((item) => {
     itemsPromises.push(
       new Promise(async (resolve, reject) => {
         const { data } = await axios.get(item);
@@ -95,7 +194,7 @@ async function scrapeSite(cur = 5.1) {
 
         $(".catalog-list .snippet").each((i, elem) => {
           const imgSrc = $(elem).find("img").attr("src");
-          const link = $(elem).find(".snippet__category").attr("href");
+          const linkKz = $(elem).find(".snippet__category").attr("href");
           const category = $(elem).find(".snippet__category").text();
           const title = $(elem).find(".snippet__title").text();
           const price =
@@ -110,16 +209,19 @@ async function scrapeSite(cur = 5.1) {
           const priceRubOpt = roundNumberToThousands(price, cur, 0.05);
           const priceRubRozn = roundNumberToThousands(price, cur, 0.25);
           const status = $(elem).find(".snippet__status").text();
+          const delivery = getDeliveryByStatus(status);
 
           results.push({
             imgSrc: `https://shop.miele.kz${imgSrc}`,
-            link: `https://shop.miele.kz${link}`,
+            linkKz: `https://shop.miele.kz${linkKz}`,
+            link: "",
             category,
             title,
             price,
             priceRubOpt,
             priceRubRozn,
             status,
+            delivery,
             date: new Date().toISOString(),
           });
         });
@@ -127,15 +229,17 @@ async function scrapeSite(cur = 5.1) {
     });
   });
 
+  const items = await updateItems(results);
+
+  writeArrayToFile(items);
+
   const wb = new xl.Workbook();
   const ws = wb.addWorksheet("Лист 1");
   const headingColumnNames = [
     "Наименование",
     "Категория",
     "Опт цена в Руб",
-    "Розн цена в Руб",
-    "Цена в Тенге",
-    "Статус",
+    "Срок поставки",
     "Ссылка",
   ];
 
@@ -145,44 +249,28 @@ async function scrapeSite(cur = 5.1) {
   });
 
   let rowIndex = 2;
-  results
-    .map(
-      ({
-        link,
-        category,
-        title,
-        price,
-        priceRubOpt,
-        priceRubRozn,
-        status,
-      }) => ({
-        title,
-        category,
-        priceRubOpt,
-        priceRubRozn,
-        price,
-        status,
-        link,
-      })
-    )
+  items
+    .map(({ title, category, priceRubOpt, delivery, link }) => ({
+      title,
+      category,
+      priceRubOpt,
+      delivery,
+      link,
+    }))
     .forEach((record) => {
       ws.cell(rowIndex, 1).string(record["title"]);
       ws.cell(rowIndex, 2).string(record["category"]);
       ws.cell(rowIndex, 3).number(record["priceRubOpt"]);
-      ws.cell(rowIndex, 4).number(record["priceRubRozn"]);
-      ws.cell(rowIndex, 5).number(record["price"]);
-      ws.cell(rowIndex, 6).string(record["status"]);
-      ws.cell(rowIndex, 7).link(record["link"]);
+      ws.cell(rowIndex, 4).string(record["delivery"]);
+      ws.cell(rowIndex, 5).link(record["link"]);
       rowIndex++;
     });
 
   wb.write(
-    `./files/Прайс-лист Miele от ${new Date().toLocaleDateString(
-      "ru-RU"
-    )} (курс: ${cur}).xlsx`
+    `./files/Прайс-лист Miele от ${new Date().toLocaleDateString("ru-RU")}.xlsx`
   );
-
-  return results;
 }
 
-module.exports = { scrapeSite };
+scrapeSite();
+
+// module.exports = { scrapeSite };
