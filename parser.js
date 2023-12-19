@@ -86,7 +86,7 @@ async function updateItems(items) {
         results.push(item);
       }
 
-      await new Promise((r) => setTimeout(r, 100));
+      await new Promise((r) => setTimeout(r, 300));
       index++;
     } catch (error) {
       console.error(error);
