@@ -53,36 +53,44 @@ async function updateItems(items) {
   const results = [];
   let index = 1;
   for (const item of items) {
-    console.log(`${index}/${items.length}`);
+    try {
+      console.log(`${index}/${items.length}`);
+      const { data } = await axios.get(item.linkKz);
 
-    const { data } = await axios.get(item.linkKz);
-    const $ = cheerio.load(data);
+      const $ = cheerio.load(data);
 
-    const article =
-      $(".product__article")?.text()?.replace("Артикул: ", "")?.trim() || "";
+      const article =
+        $(".product__article")?.text()?.replace("Артикул: ", "")?.trim() || "";
 
-    if (article) {
-      const { data: dataTeh } = await axios.get(
-        `https://tehnikapremium.ru/catalog/?q=${article}&s=Найти`
-      );
-      const $ = cheerio.load(dataTeh);
+      if (article) {
+        try {
+          const { data: dataTeh } = await axios.get(
+            `https://tehnikapremium.ru/catalog/?q=${article}&s=Найти`
+          );
+          const $ = cheerio.load(dataTeh);
 
-      const link = $(".item_info--top_block a")?.attr("href")
-        ? `https://tehnikapremium.ru${$(".item_info--top_block a")?.attr(
-            "href"
-          )}`
-        : `https://tehnikapremium.ru/catalog/?q=${article}&s=Найти`;
+          const link = $(".item_info--top_block a")?.attr("href")
+            ? `https://tehnikapremium.ru${$(".item_info--top_block a")?.attr(
+                "href"
+              )}`
+            : `https://tehnikapremium.ru/catalog/?q=${article}&s=Найти`;
 
-      results.push({
-        ...item,
-        link,
-      });
-    } else {
-      results.push(item);
+          results.push({
+            ...item,
+            link,
+          });
+        } catch (error) {
+          console.err(error);
+        }
+      } else {
+        results.push(item);
+      }
+
+      await new Promise((r) => setTimeout(r, 100));
+      index++;
+    } catch (error) {
+      console.err(error);
     }
-
-    await new Promise((r) => setTimeout(r, 100));
-    index++;
   }
 
   return results;

@@ -11,11 +11,11 @@ const { Worker } = require("worker_threads");
 
 function startWorker(path, cb) {
   let w = new Worker(path, { workerData: null });
-  w.on("message", (msg) => {
+  w.once("message", (msg) => {
     cb(null, msg);
   });
-  w.on("error", cb);
-  w.on("exit", (code) => {
+  w.once("error", cb);
+  w.once("exit", (code) => {
     if (code != 0)
       console.error(new Error(`Worker stopped with exit code ${code}`));
   });
@@ -45,7 +45,7 @@ const setup = () => {
     ctx.reply(
       `Салон Premium | Бытовая техника для кухни и прачечной.
 
-Нужна бытовая техника из видео? Закажите её на нашем сайте tehnikapremium.ru.
+Нужна бытовая техника? Закажите её на нашем сайте tehnikapremium.ru.
 
 Приходите в наши салоны в Москве, Екатеринбурге и Тюмени:
 
@@ -77,10 +77,13 @@ const setup = () => {
       ctx.replyWithDocument({ source: `./files/${xlsxFile}` });
     } else {
       ctx.reply("Не удалось найти файл для скачивания. Уже написали админам.");
-      bot.telegram.sendMessage(
-        ADMIN_ID,
-        "Не удалось найти файл для скачивания!"
-      );
+
+      if (ctx.message.from.id !== ADMIN_ID) {
+        bot.telegram.sendMessage(
+          ADMIN_ID,
+          "Не удалось найти файл для скачивания!"
+        );
+      }
     }
   };
 
@@ -99,7 +102,10 @@ const setup = () => {
 
       startWorker(__dirname + "/../parser.js", (err, result) => {
         if (err) {
-          bot.telegram.sendMessage(ADMIN_ID, `Ошибка загрузки: ${err}`);
+          bot.telegram.sendMessage(
+            ADMIN_ID,
+            `Ошибка парсера: ${err}`.substring(400)
+          );
           return console.error(err);
         }
 
