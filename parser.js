@@ -80,7 +80,7 @@ async function updateItems(items) {
             link,
           });
         } catch (error) {
-          console.err(error);
+          console.error(error);
         }
       } else {
         results.push(item);
@@ -89,7 +89,7 @@ async function updateItems(items) {
       await new Promise((r) => setTimeout(r, 100));
       index++;
     } catch (error) {
-      console.err(error);
+      console.error(error);
     }
   }
 
