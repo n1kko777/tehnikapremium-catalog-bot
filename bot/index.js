@@ -110,6 +110,7 @@ const setup = () => {
         }
 
         bot.telegram.sendMessage(ADMIN_ID, "Прайс-лист обновлен!");
+        bot.telegram.sendMessage(ADMIN_ID, result?.toString());
       });
     }
   });
