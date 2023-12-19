@@ -7,3 +7,6 @@ services:
     env_file:
       - .env
     restart: always
+
+    volumes:
+      - ${PWD}/files:/app/files
