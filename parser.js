@@ -277,6 +277,8 @@ async function scrapeSite() {
   wb.write(
     `./files/Прайс-лист Miele от ${new Date().toLocaleDateString("ru-RU")}.xlsx`
   );
+
+  return `Всего товаров: ${items?.length || 0}`;
 }
 
 scrapeSite();
