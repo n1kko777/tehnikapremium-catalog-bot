@@ -78,7 +78,7 @@ const setup = () => {
     } else {
       ctx.reply("Не удалось найти файл для скачивания. Уже написали админам.");
 
-      if (ctx.message.from.id !== ADMIN_ID) {
+      if (ADMIN_ID?.toString() !== ctx.message?.from?.id?.toString()) {
         bot.telegram.sendMessage(
           ADMIN_ID,
           "Не удалось найти файл для скачивания!"
