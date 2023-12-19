@@ -66,6 +66,8 @@ const setup = () => {
   });
 
   const downloadMiele = (ctx) => {
+    const user = ctx?.update?.callback_query?.from || ctx?.message?.from;
+
     const files = fs.readdirSync("./files");
     const xlsxFile = files.find(
       (file) =>
@@ -75,10 +77,17 @@ const setup = () => {
 
     if (xlsxFile) {
       ctx.replyWithDocument({ source: `./files/${xlsxFile}` });
+
+      if (ADMIN_ID?.toString() !== user?.id?.toString()) {
+        bot.telegram.sendMessage(
+          ADMIN_ID,
+          `Пользователь: ${user.username} только что скачал файл`
+        );
+      }
     } else {
       ctx.reply("Не удалось найти файл для скачивания. Уже написали админам.");
 
-      if (ADMIN_ID?.toString() !== ctx.message?.from?.id?.toString()) {
+      if (ADMIN_ID?.toString() !== user?.id?.toString()) {
         bot.telegram.sendMessage(
           ADMIN_ID,
           "Не удалось найти файл для скачивания!"
