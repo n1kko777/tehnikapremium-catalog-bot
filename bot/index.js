@@ -81,7 +81,7 @@ const setup = () => {
       if (ADMIN_ID?.toString() !== user?.id?.toString()) {
         bot.telegram.sendMessage(
           ADMIN_ID,
-          `Пользователь: ${user.username} только что скачал файл`
+          `Пользователь: ${user.username || user?.id} только что скачал файл`
         );
       }
     } else {
