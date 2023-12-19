@@ -37,6 +37,7 @@ const initialize = async () => {
     });
   } catch (err) {
     fastify.log.error(err);
+    bot.telegram.sendMessage(ADMIN_ID, `Error fastify: ${err}`);
     process.exit(1);
   }
 };

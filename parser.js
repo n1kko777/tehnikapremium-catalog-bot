@@ -3,6 +3,8 @@ const cheerio = require("cheerio");
 const xl = require("excel4node");
 const fs = require("fs");
 
+const { parentPort } = require("worker_threads");
+
 const { scrapeCurrency } = require("./currency");
 
 function writeArrayToFile(array) {
@@ -278,9 +280,9 @@ async function scrapeSite() {
     `./files/Прайс-лист Miele от ${new Date().toLocaleDateString("ru-RU")}.xlsx`
   );
 
-  return `Всего товаров: ${items?.length || 0}`;
+  if (parentPort) {
+    parentPort.postMessage(`Всего товаров: ${items?.length || 0}`);
+  }
 }
 
 scrapeSite();
-
-// module.exports = { scrapeSite };

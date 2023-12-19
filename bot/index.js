@@ -7,20 +7,7 @@ dotenv.config();
 
 const { scrapeCurrency } = require("../currency");
 
-const { Worker } = require("worker_threads");
-
-function startWorker(path, cb) {
-  let w = new Worker(path, { workerData: null });
-  w.once("message", (msg) => {
-    cb(null, msg);
-  });
-  w.once("error", cb);
-  w.once("exit", (code) => {
-    if (code != 0)
-      console.error(new Error(`Worker stopped with exit code ${code}`));
-  });
-  return w;
-}
+const { startWorker, getUserInfo } = require("./utils");
 
 const token = process.env.BOT_TOKEN;
 const ADMIN_ID = process.env.ADMIN_ID;
@@ -67,13 +54,15 @@ const setup = () => {
 
   const downloadMiele = (ctx) => {
     const user = ctx?.update?.callback_query?.from || ctx?.message?.from;
+    const cred = getUserInfo(user);
 
     const files = fs.readdirSync("./files");
-    const xlsxFile = files.find(
-      (file) =>
-        file.includes(new Date().toLocaleDateString("ru-RU")) &&
-        file.endsWith(".xlsx")
-    );
+    const xlsxFile =
+      files.find(
+        (file) =>
+          file.includes(new Date().toLocaleDateString("ru-RU")) &&
+          file.endsWith(".xlsx")
+      ) || files.filter((file) => file.endsWith(".xlsx")).pop();
 
     if (xlsxFile) {
       ctx.replyWithDocument({ source: `./files/${xlsxFile}` });
@@ -81,7 +70,7 @@ const setup = () => {
       if (ADMIN_ID?.toString() !== user?.id?.toString()) {
         bot.telegram.sendMessage(
           ADMIN_ID,
-          `Пользователь: ${user.username || user?.id} только что скачал файл`
+          `Пользователь: ${cred} только что скачал файл`
         );
       }
     } else {
@@ -113,13 +102,16 @@ const setup = () => {
         if (err) {
           bot.telegram.sendMessage(
             ADMIN_ID,
-            `Ошибка парсера: ${err}`.substring(400)
+            `Ошибка парсера: ${err || "Неопределенная ошибка"}`.substring(400)
           );
           return console.error(err);
         }
 
         bot.telegram.sendMessage(ADMIN_ID, "Прайс-лист обновлен!");
-        bot.telegram.sendMessage(ADMIN_ID, result?.toString());
+
+        if (result) {
+          bot.telegram.sendMessage(ADMIN_ID, result?.toString());
+        }
       });
     }
   });
