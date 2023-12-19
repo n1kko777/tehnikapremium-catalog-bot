@@ -54,7 +54,6 @@ const setup = () => {
 
   const downloadMiele = (ctx) => {
     const user = ctx?.update?.callback_query?.from || ctx?.message?.from;
-    const cred = getUserInfo(user);
 
     const files = fs.readdirSync("./files");
     const xlsxFile =
@@ -65,23 +64,31 @@ const setup = () => {
       ) || files.filter((file) => file.endsWith(".xlsx")).pop();
 
     if (xlsxFile) {
-      ctx.replyWithDocument({ source: `./files/${xlsxFile}` });
+      try {
+        if (ADMIN_ID?.toString() !== user?.id?.toString()) {
+          const cred = getUserInfo(user);
 
-      if (ADMIN_ID?.toString() !== user?.id?.toString()) {
-        bot.telegram.sendMessage(
-          ADMIN_ID,
-          `Пользователь: ${cred} только что скачал файл`
-        );
-      }
+          bot.telegram.sendMessage(
+            ADMIN_ID,
+            `Пользователь: ${cred} только что скачал файл`
+          );
+        }
+      } catch (error) {}
+
+      return ctx.replyWithDocument({ source: `./files/${xlsxFile}` });
     } else {
-      ctx.reply("Не удалось найти файл для скачивания. Уже написали админам.");
+      try {
+        if (ADMIN_ID?.toString() !== user?.id?.toString()) {
+          bot.telegram.sendMessage(
+            ADMIN_ID,
+            "Не удалось найти файл для скачивания!"
+          );
+        }
+      } catch (error) {}
 
-      if (ADMIN_ID?.toString() !== user?.id?.toString()) {
-        bot.telegram.sendMessage(
-          ADMIN_ID,
-          "Не удалось найти файл для скачивания!"
-        );
-      }
+      return ctx.reply(
+        "Не удалось найти файл для скачивания. Уже написали админам."
+      );
     }
   };
 
