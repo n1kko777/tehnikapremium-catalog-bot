@@ -19,9 +19,7 @@ const initialize = async () => {
   fastify.post(SECRET_PATH, (req, rep) => bot.handleUpdate(req.body, rep.raw));
 
   if (NODE_ENV === "development") {
-    bot.launch().then(() => {
-      bot.telegram.sendMessage(ADMIN_ID, "Бот был перезапущен!");
-    });
+    bot.launch();
   } else {
     bot.telegram.setWebhook(WEBHOOK_URL + SECRET_PATH).then(() => {
       console.log("Webhook is set on", WEBHOOK_URL);
@@ -38,6 +36,7 @@ const initialize = async () => {
 
   try {
     await fastify.listen({ port: PORT, host: "0.0.0.0" }).then(() => {
+      bot.telegram.sendMessage(ADMIN_ID, "Бот был перезапущен!");
       console.log("Listening on port", PORT);
     });
   } catch (err) {
