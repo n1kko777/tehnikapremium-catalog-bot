@@ -19,7 +19,9 @@ const initialize = async () => {
   fastify.post(SECRET_PATH, (req, rep) => bot.handleUpdate(req.body, rep.raw));
 
   if (NODE_ENV === "development") {
-    bot.launch();
+    bot.launch().then(() => {
+      bot.telegram.sendMessage(ADMIN_ID, "Бот был перезапущен!");
+    });
   } else {
     bot.telegram.setWebhook(WEBHOOK_URL + SECRET_PATH).then(() => {
       console.log("Webhook is set on", WEBHOOK_URL);
@@ -28,7 +30,10 @@ const initialize = async () => {
 
   bot.catch((error) => {
     console.log("error", error);
-    bot.telegram.sendMessage(ADMIN_ID, `Error executing a command: ${error}`);
+    bot.telegram.sendMessage(
+      ADMIN_ID,
+      `Error executing a command: ${error}`.substring(400)
+    );
   });
 
   try {
@@ -37,7 +42,7 @@ const initialize = async () => {
     });
   } catch (err) {
     fastify.log.error(err);
-    bot.telegram.sendMessage(ADMIN_ID, `Error fastify: ${err}`);
+    bot.telegram.sendMessage(ADMIN_ID, `Error fastify: ${err}`.substring(400));
     process.exit(1);
   }
 };

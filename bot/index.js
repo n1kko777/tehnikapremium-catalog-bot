@@ -28,30 +28,6 @@ const inlineButtonConfig = {
 const setup = () => {
   bot.use(Telegraf.log());
 
-  bot.start((ctx) => {
-    ctx.reply(
-      `Салон Premium | Бытовая техника для кухни и прачечной.
-
-Нужна бытовая техника? Закажите её на нашем сайте tehnikapremium.ru.
-
-Приходите в наши салоны в Москве, Екатеринбурге и Тюмени:
-
-Москва
-шоссе Энтузиастов, 3к2
-(495) 477-40-32
-
-Екатеринбург
-Московская, 77
-Цвиллинга, 1
-(343) 238-50-00
-
-Тюмень
-50 лет Октября, 57Б
-(3452) 57-91-50`,
-      inlineButtonConfig
-    );
-  });
-
   const downloadMiele = (ctx) => {
     const user = ctx?.update?.callback_query?.from || ctx?.message?.from;
 
@@ -93,6 +69,40 @@ const setup = () => {
   };
 
   bot.command("download", downloadMiele);
+
+  bot.start((ctx) => {
+    ctx.reply(
+      `Салон Premium | Бытовая техника для кухни и прачечной.
+
+Нужна бытовая техника? Закажите её на нашем сайте tehnikapremium.ru.
+
+Приходите в наши салоны в Москве, Екатеринбурге и Тюмени:
+
+Москва
+шоссе Энтузиастов, 3к2
+(495) 477-40-32
+
+Екатеринбург
+Московская, 77
+Цвиллинга, 1
+(343) 238-50-00
+
+Тюмень
+50 лет Октября, 57Б
+(3452) 57-91-50`,
+      inlineButtonConfig
+    );
+  });
+
+  bot.command("info", (ctx) => {
+    ctx.reply(
+      `Возможности бота:
+/start - информационнй пост
+/info - получить информацию о функционале
+/download - скачать прайс-лист Miele`
+    );
+  });
+
   bot.command("currency", async (ctx) => {
     if (ADMIN_ID?.toString() === ctx.message.from.id?.toString()) {
       const { message_id } = await ctx.reply("Загрузка...");

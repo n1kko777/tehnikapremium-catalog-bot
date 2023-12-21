@@ -1,11 +1,11 @@
 const axios = require("axios");
 const cheerio = require("cheerio");
-const xl = require("excel4node");
 const fs = require("fs");
 
 const { parentPort } = require("worker_threads");
 
 const { scrapeCurrency } = require("./currency");
+const { convertJsonToExcel } = require("./convertJsonToExcel");
 
 function writeArrayToFile(array) {
   const data = JSON.stringify(array);
@@ -98,15 +98,64 @@ async function updateItems(items) {
   return results;
 }
 
-async function scrapeSite() {
+async function updateCatalog(items) {
+  const results = [];
   const cur = (await scrapeCurrency()) ?? 5.1;
 
+  for (const item of items) {
+    try {
+      const { data } = await axios.get(item);
+      const $ = cheerio.load(data);
+
+      $(".catalog-list .snippet").each((i, elem) => {
+        const imgSrc = $(elem).find("img").attr("src");
+        const linkKz = $(elem).find(".snippet__category").attr("href");
+        const category = $(elem).find(".snippet__category").text();
+        const title = $(elem).find(".snippet__title").text();
+        const price =
+          Number(
+            $(elem)
+              .find(".snippet__price")
+              ?.text()
+              ?.replace("₸", "")
+              ?.trim()
+              ?.replace(/\s/g, "")
+          ) ?? 0;
+        const priceRubOpt = roundNumberToThousands(price, cur, 0.05);
+        const priceRubRozn = roundNumberToThousands(price, cur, 0.25);
+        const status = $(elem).find(".snippet__status").text();
+        const delivery = getDeliveryByStatus(status);
+
+        results.push({
+          imgSrc: `https://shop.miele.kz${imgSrc}`,
+          linkKz: `https://shop.miele.kz${linkKz}`,
+          link: "",
+          category,
+          title,
+          price,
+          priceRubOpt,
+          priceRubRozn,
+          status,
+          delivery,
+          date: new Date().toISOString(),
+        });
+      });
+
+      await new Promise((r) => setTimeout(r, 30));
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  return results;
+}
+
+async function scrapeSite() {
   const url = `https://shop.miele.kz/catalog/`;
 
   const { data } = await axios.get(url);
   const $ = cheerio.load(data);
 
-  const results = [];
   const categories = [];
 
   $(".catalog-sections .catalog-sections__item").each((i, elem) => {
@@ -186,99 +235,12 @@ async function scrapeSite() {
     });
   });
 
-  const itemsPromises = [];
+  const itemsPromises = await updateCatalog(linksWithPages);
 
-  linksWithPages.forEach((item) => {
-    itemsPromises.push(
-      new Promise(async (resolve, reject) => {
-        const { data } = await axios.get(item);
-        resolve(data);
-      })
-    );
-  });
-
-  await Promise.allSettled(itemsPromises).then((resps) => {
-    resps.forEach((res, index) => {
-      if (res.status === "fulfilled") {
-        const $ = cheerio.load(res.value);
-
-        $(".catalog-list .snippet").each((i, elem) => {
-          const imgSrc = $(elem).find("img").attr("src");
-          const linkKz = $(elem).find(".snippet__category").attr("href");
-          const category = $(elem).find(".snippet__category").text();
-          const title = $(elem).find(".snippet__title").text();
-          const price =
-            Number(
-              $(elem)
-                .find(".snippet__price")
-                ?.text()
-                ?.replace("₸", "")
-                ?.trim()
-                ?.replace(/\s/g, "")
-            ) ?? 0;
-          const priceRubOpt = roundNumberToThousands(price, cur, 0.05);
-          const priceRubRozn = roundNumberToThousands(price, cur, 0.25);
-          const status = $(elem).find(".snippet__status").text();
-          const delivery = getDeliveryByStatus(status);
-
-          results.push({
-            imgSrc: `https://shop.miele.kz${imgSrc}`,
-            linkKz: `https://shop.miele.kz${linkKz}`,
-            link: "",
-            category,
-            title,
-            price,
-            priceRubOpt,
-            priceRubRozn,
-            status,
-            delivery,
-            date: new Date().toISOString(),
-          });
-        });
-      }
-    });
-  });
-
-  const items = await updateItems(results);
+  const items = await updateItems(itemsPromises);
 
   writeArrayToFile(items);
-
-  const wb = new xl.Workbook();
-  const ws = wb.addWorksheet("Лист 1");
-  const headingColumnNames = [
-    "Наименование",
-    "Категория",
-    "Опт цена в Руб",
-    "Срок поставки",
-    "Ссылка",
-  ];
-
-  let headingColumnIndex = 1;
-  headingColumnNames.forEach((heading) => {
-    ws.cell(1, headingColumnIndex++).string(heading);
-  });
-
-  let rowIndex = 2;
-  items
-    .map(({ title, category, priceRubOpt, delivery, link }) => ({
-      title,
-      category,
-      priceRubOpt,
-      delivery,
-      link,
-    }))
-    .forEach((record) => {
-      ws.cell(rowIndex, 1).string(record["title"]);
-      ws.cell(rowIndex, 2).string(record["category"]);
-      ws.cell(rowIndex, 3).number(record["priceRubOpt"]);
-      ws.cell(rowIndex, 4).string(record["delivery"]);
-      ws.cell(rowIndex, 5).link(record["link"]);
-      rowIndex++;
-    });
-
-  wb.write(
-    `./files/Прайс-лист Miele от ${new Date().toLocaleDateString("ru-RU")}.xlsx`
-  );
+  convertJsonToExcel(items);
 
   if (parentPort) {
     parentPort.postMessage(`Всего товаров: ${items?.length || 0}`);
