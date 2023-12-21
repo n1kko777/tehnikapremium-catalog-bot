@@ -7,10 +7,13 @@ async function scrapeCurrency() {
   const $ = cheerio.load(data);
 
   let results = Number(
-    $(".list-row-cell.list-row-cell--value-sm.outdated").first().text().trim()
+    $(".list-row:not(.list-row--header) .list-row-cell.list-row-cell--value-sm")
+      .first()
+      .text()
+      .trim()
   );
 
-  return isNaN(results) ? 5 : results;
+  return isNaN(results) || !results ? 5.1 : results;
 }
 
 module.exports = { scrapeCurrency };
