@@ -3,7 +3,14 @@ const dotenv = require("dotenv");
 
 dotenv.config();
 
-const { downloadMiele, start, currency, update } = require("./commands");
+const {
+  downloadMiele,
+  start,
+  currency,
+  update,
+  startUpdateCron,
+  stopUpdateCron,
+} = require("./commands");
 
 const token = process.env.BOT_TOKEN;
 
@@ -20,6 +27,11 @@ const setup = () => {
   bot.command("download", downloadMiele);
   bot.command("currency", async (ctx) => await currency(ctx));
   bot.command("update", async (ctx) => await update(ctx, bot));
+  bot.command(
+    "startUpdateCron",
+    async (ctx) => await startUpdateCron(ctx, bot)
+  );
+  bot.command("stopUpdateCron", stopUpdateCron);
 
   bot.action("downloadMiele", (ctx) => downloadMiele(ctx, bot));
 

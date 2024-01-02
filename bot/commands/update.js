@@ -1,6 +1,3 @@
-const dotenv = require("dotenv");
-dotenv.config();
-
 const { startWorker } = require("../utils");
 
 const ADMIN_ID = process.env.ADMIN_ID;
