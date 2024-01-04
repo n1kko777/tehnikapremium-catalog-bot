@@ -23,7 +23,7 @@ const bot = new Telegraf(token);
 const setup = () => {
   bot.use(Telegraf.log());
 
-  bot.start(start);
+  bot.start(async (ctx) => await start(ctx));
   bot.command("download", downloadMiele);
   bot.command("currency", async (ctx) => await currency(ctx));
   bot.command("update", async (ctx) => await update(ctx, bot));
@@ -33,7 +33,7 @@ const setup = () => {
   );
   bot.command("stopUpdateCron", stopUpdateCron);
 
-  bot.action("downloadMiele", (ctx) => downloadMiele(ctx, bot));
+  bot.action("downloadMiele", async (ctx) => await downloadMiele(ctx, bot));
 
   return bot;
 };

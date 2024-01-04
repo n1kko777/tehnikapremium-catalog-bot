@@ -1,7 +1,9 @@
 const Fastify = require("fastify");
+
 const dotenv = require("dotenv");
 dotenv.config();
 
+const db = require("./database");
 const { setup } = require("./bot");
 
 const { URL: WEBHOOK_URL, ADMIN_ID, NODE_ENV } = process.env;
@@ -28,10 +30,7 @@ const initialize = async () => {
 
   bot.catch((error) => {
     console.log("error", error);
-    bot.telegram.sendMessage(
-      ADMIN_ID,
-      `Error executing a command: ${error}`.substring(400)
-    );
+    bot.telegram.sendMessage(ADMIN_ID, `Error executing a command: ${error}`);
   });
 
   try {
@@ -41,9 +40,24 @@ const initialize = async () => {
     });
   } catch (err) {
     fastify.log.error(err);
-    bot.telegram.sendMessage(ADMIN_ID, `Error fastify: ${err}`.substring(400));
+    bot.telegram.sendMessage(ADMIN_ID, `Error fastify: ${err}`);
     process.exit(1);
   }
 };
 
-initialize();
+db.authenticate()
+  .then(() => {
+    console.log("Connection has been established successfully.");
+    console.log("Creating tables ===================");
+    db.sync()
+      .then(() => {
+        console.log("=============== Tables created per model");
+        initialize();
+      })
+      .catch((err) => {
+        console.error("Unable to create tables:", err);
+      });
+  })
+  .catch((err) => {
+    console.error("Unable to connect to the database:", err);
+  });
