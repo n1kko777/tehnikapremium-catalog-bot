@@ -10,7 +10,7 @@ const update = async (ctx, bot) => {
       if (err) {
         bot.telegram.sendMessage(
           ADMIN_ID,
-          `Ошибка парсера: ${err || "Неопределенная ошибка"}`.substring(400)
+          `Ошибка парсера: ${err || "Неопределенная ошибка"}`
         );
         return console.error(err);
       }

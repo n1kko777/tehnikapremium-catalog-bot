@@ -1,4 +1,5 @@
 const { Markup } = require("telegraf");
+const { createUser } = require("../../controllers");
 
 const inlineButtonConfig = {
   parse_mode: "HTML",
@@ -7,7 +8,11 @@ const inlineButtonConfig = {
   ]),
 };
 
-const start = (ctx) => {
+const start = async (ctx) => {
+  const user = ctx.from;
+
+  await createUser(user);
+
   ctx.reply(
     `tehnikapremium.ru — интернет магазин бытовой техники
 

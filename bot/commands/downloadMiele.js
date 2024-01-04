@@ -1,11 +1,14 @@
 const fs = require("fs");
 
+const { createUser } = require("../../controllers");
 const { getUserInfo } = require("../utils");
 
 const ADMIN_ID = process.env.ADMIN_ID;
 
-const downloadMiele = (ctx, bot) => {
+const downloadMiele = async (ctx, bot) => {
   const user = ctx?.update?.callback_query?.from || ctx?.message?.from;
+
+  await createUser(user);
 
   const files = fs.readdirSync("./files");
   const xlsxFile =
