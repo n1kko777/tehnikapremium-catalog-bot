@@ -10,6 +10,8 @@ const {
   update,
   startUpdateCron,
   stopUpdateCron,
+  service,
+  contacts,
 } = require("./commands");
 
 const token = process.env.BOT_TOKEN;
@@ -32,6 +34,9 @@ const setup = () => {
     async (ctx) => await startUpdateCron(ctx, bot)
   );
   bot.command("stopUpdateCron", stopUpdateCron);
+
+  bot.command("service", service);
+  bot.command("contacts", contacts);
 
   bot.action("downloadMiele", async (ctx) => await downloadMiele(ctx, bot));
 

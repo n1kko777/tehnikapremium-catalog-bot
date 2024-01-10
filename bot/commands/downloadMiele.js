@@ -19,17 +19,6 @@ const downloadMiele = async (ctx, bot) => {
     ) || files.filter((file) => file.endsWith(".xlsx")).pop();
 
   if (xlsxFile) {
-    try {
-      if (ADMIN_ID?.toString() !== user?.id?.toString()) {
-        const cred = getUserInfo(user);
-
-        bot.telegram.sendMessage(
-          ADMIN_ID,
-          `Пользователь: ${cred} только что скачал файл`
-        );
-      }
-    } catch (error) {}
-
     return ctx.replyWithDocument({ source: `./files/${xlsxFile}` });
   } else {
     try {

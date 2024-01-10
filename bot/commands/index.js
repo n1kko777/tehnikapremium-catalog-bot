@@ -3,6 +3,8 @@ const { start } = require("./start");
 const { currency } = require("./currency");
 const { update } = require("./update");
 const { startUpdateCron, stopUpdateCron } = require("./cron");
+const { service } = require("./service");
+const { contacts } = require("./contacts");
 
 module.exports = {
   downloadMiele,
@@ -11,4 +13,6 @@ module.exports = {
   currency,
   startUpdateCron,
   stopUpdateCron,
+  service,
+  contacts,
 };

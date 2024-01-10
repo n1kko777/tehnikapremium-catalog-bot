@@ -4,6 +4,7 @@ const { createUser } = require("../../controllers");
 const inlineButtonConfig = {
   parse_mode: "HTML",
   ...Markup.inlineKeyboard([
+    [Markup.button.url("Посетить сайт", "https://tehnikapremium.ru/")],
     [Markup.button.callback("Скачать прайс-лист Miele", "downloadMiele")],
   ]),
 };
