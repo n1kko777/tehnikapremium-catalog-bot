@@ -88,7 +88,7 @@ async function updateItems(items) {
         results.push(item);
       }
 
-      await new Promise((r) => setTimeout(r, 120));
+      await new Promise((r) => setTimeout(r, 150));
       index++;
     } catch (error) {
       console.error(error);
@@ -141,7 +141,7 @@ async function updateCatalog(items) {
         });
       });
 
-      await new Promise((r) => setTimeout(r, 30));
+      await new Promise((r) => setTimeout(r, 50));
     } catch (error) {
       console.error(error);
     }

@@ -18,4 +18,9 @@ async function createUser(user) {
   }
 }
 
-module.exports = { createUser };
+async function getUsers() {
+  const users = await User.findAll();
+  return users || [];
+}
+
+module.exports = { createUser, getUsers };

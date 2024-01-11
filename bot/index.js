@@ -12,6 +12,7 @@ const {
   stopUpdateCron,
   service,
   contacts,
+  users,
 } = require("./commands");
 
 const token = process.env.BOT_TOKEN;
@@ -27,6 +28,12 @@ const setup = () => {
 
   bot.start(async (ctx) => await start(ctx));
   bot.command("download", downloadMiele);
+  bot.command("service", service);
+  bot.command("contacts", contacts);
+
+  bot.action("downloadMiele", async (ctx) => await downloadMiele(ctx, bot));
+
+  // admin
   bot.command("currency", async (ctx) => await currency(ctx));
   bot.command("update", async (ctx) => await update(ctx, bot));
   bot.command(
@@ -34,11 +41,7 @@ const setup = () => {
     async (ctx) => await startUpdateCron(ctx, bot)
   );
   bot.command("stopUpdateCron", stopUpdateCron);
-
-  bot.command("service", service);
-  bot.command("contacts", contacts);
-
-  bot.action("downloadMiele", async (ctx) => await downloadMiele(ctx, bot));
+  bot.command("users", async (ctx) => await users(ctx, bot));
 
   return bot;
 };
