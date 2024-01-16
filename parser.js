@@ -1,4 +1,5 @@
 const axios = require("axios");
+const https = require("https");
 const cheerio = require("cheerio");
 const fs = require("fs");
 
@@ -6,6 +7,9 @@ const { parentPort } = require("worker_threads");
 
 const { scrapeCurrency } = require("./currency");
 const { convertJsonToExcel } = require("./convertJsonToExcel");
+
+axios.defaults.timeout = 30000;
+axios.defaults.httpsAgent = new https.Agent({ keepAlive: true });
 
 function writeArrayToFile(array) {
   const data = JSON.stringify(array);
@@ -80,6 +84,7 @@ async function updateItems(items) {
           results.push({
             ...item,
             link,
+            article,
           });
         } catch (error) {
           console.error(error);

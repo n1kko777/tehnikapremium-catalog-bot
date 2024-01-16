@@ -8,6 +8,7 @@ function convertJsonToExcel(items) {
     "Категория",
     "Опт цена в Руб",
     "Срок поставки",
+    "Артикул",
     "Ссылка",
   ];
 
@@ -32,11 +33,12 @@ function convertJsonToExcel(items) {
 
   let rowIndex = 2;
   items
-    .map(({ title, category, priceRubOpt, delivery, link }) => ({
+    .map(({ title, category, priceRubOpt, delivery, article, link }) => ({
       title,
       category,
       priceRubOpt,
       delivery,
+      article,
       link,
     }))
     .forEach((record) => {
@@ -61,7 +63,8 @@ function convertJsonToExcel(items) {
             horizontal: "center",
           },
         });
-      ws.cell(rowIndex, 5).link(record["link"]).style(verticalAlignStyle);
+      ws.cell(rowIndex, 5).string(record["article"]).style(verticalAlignStyle);
+      ws.cell(rowIndex, 6).link(record["link"]).style(verticalAlignStyle);
       rowIndex++;
     });
 

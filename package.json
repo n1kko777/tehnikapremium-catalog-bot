@@ -16,6 +16,7 @@
     "dotenv": "^16.3.1",
     "excel4node": "^1.8.2",
     "fastify": "^4.25.1",
+    "https": "^1.0.0",
     "jsdom": "^23.0.1",
     "node-schedule": "^2.1.1",
     "pg": "^8.11.3",
