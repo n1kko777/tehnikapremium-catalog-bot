@@ -13,6 +13,7 @@ const {
   service,
   contacts,
   users,
+  clearFolder,
 } = require("./commands");
 
 const token = process.env.BOT_TOKEN;
@@ -42,6 +43,7 @@ const setup = () => {
   );
   bot.command("stopUpdateCron", stopUpdateCron);
   bot.command("users", async (ctx) => await users(ctx, bot));
+  bot.command("clearFolder", clearFolder);
 
   return bot;
 };

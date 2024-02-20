@@ -1,4 +1,5 @@
 const { downloadMiele } = require("./downloadMiele");
+const { clearFolder } = require("./clearFolder");
 const { start } = require("./start");
 const { currency } = require("./currency");
 const { update } = require("./update");
@@ -9,6 +10,7 @@ const { users } = require("./users");
 
 module.exports = {
   downloadMiele,
+  clearFolder,
   start,
   update,
   currency,

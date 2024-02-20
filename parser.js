@@ -57,10 +57,9 @@ function getDeliveryByStatus(status) {
 
 async function updateItems(items) {
   const results = [];
-  let index = 1;
+
   for (const item of items) {
     try {
-      console.log(`${index}/${items.length}`);
       const { data } = await axios.get(item.linkKz);
 
       const $ = cheerio.load(data);
@@ -69,6 +68,7 @@ async function updateItems(items) {
         $(".product__article")?.text()?.replace("Артикул: ", "")?.trim() || "";
 
       if (article) {
+        const updatedItem = { ...item };
         try {
           const { data: dataTeh } = await axios.get(
             `https://tehnikapremium.ru/catalog/?q=${article}&s=Найти`
@@ -81,20 +81,18 @@ async function updateItems(items) {
               )}`
             : `https://tehnikapremium.ru/catalog/?q=${article}&s=Найти`;
 
-          results.push({
-            ...item,
-            link,
-            article,
-          });
+          updatedItem.link = link;
+          updatedItem.article = article;
         } catch (error) {
           console.error(error);
+        } finally {
+          results.push(updatedItem);
         }
       } else {
         results.push(item);
       }
 
       await new Promise((r) => setTimeout(r, 150));
-      index++;
     } catch (error) {
       console.error(error);
     }
@@ -244,11 +242,18 @@ async function scrapeSite() {
 
   const items = await updateItems(itemsPromises);
 
-  writeArrayToFile(items);
-  convertJsonToExcel(items);
+  if (items?.length > 0) {
+    writeArrayToFile(items);
+    convertJsonToExcel(items);
+
+    if (parentPort) {
+      parentPort.postMessage(`Всего товаров: ${items?.length || 0}`);
+    }
+    return;
+  }
 
   if (parentPort) {
-    parentPort.postMessage(`Всего товаров: ${items?.length || 0}`);
+    parentPort.postMessage(`Не удалось обновить прайс`);
   }
 }
 
