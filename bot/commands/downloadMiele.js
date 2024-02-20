@@ -1,7 +1,6 @@
 const fs = require("fs");
 
 const { createUser } = require("../../controllers");
-const { getUserInfo } = require("../utils");
 
 const ADMIN_ID = process.env.ADMIN_ID;
 
