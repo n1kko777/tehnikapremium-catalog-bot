@@ -11,6 +11,9 @@ const { convertJsonToExcel } = require("./convertJsonToExcel");
 axios.defaults.timeout = 30000;
 axios.defaults.httpsAgent = new https.Agent({ keepAlive: true });
 
+const OPT_PERCENT = 0.1;
+const ROZN_PERCENT = 0.3;
+
 function writeArrayToFile(array) {
   const data = JSON.stringify(array);
   fs.writeFile(`./files/data_${new Date().toISOString()}.json`, data, (err) => {
@@ -124,8 +127,8 @@ async function updateCatalog(items) {
               ?.trim()
               ?.replace(/\s/g, "")
           ) ?? 0;
-        const priceRubOpt = roundNumberToThousands(price, cur, 0.05);
-        const priceRubRozn = roundNumberToThousands(price, cur, 0.25);
+        const priceRubOpt = roundNumberToThousands(price, cur, OPT_PERCENT);
+        const priceRubRozn = roundNumberToThousands(price, cur, ROZN_PERCENT);
         const status = $(elem).find(".snippet__status").text();
         const delivery = getDeliveryByStatus(status);
 
