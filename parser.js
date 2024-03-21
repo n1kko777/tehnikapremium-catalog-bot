@@ -2,6 +2,9 @@ const axios = require("axios");
 const https = require("https");
 const cheerio = require("cheerio");
 const fs = require("fs");
+const dotenv = require("dotenv");
+
+dotenv.config();
 
 const { parentPort } = require("worker_threads");
 
@@ -11,8 +14,8 @@ const { convertJsonToExcel } = require("./convertJsonToExcel");
 axios.defaults.timeout = 30000;
 axios.defaults.httpsAgent = new https.Agent({ keepAlive: true });
 
-const OPT_PERCENT = 0.1;
-const ROZN_PERCENT = 0.3;
+const OPT_PERCENT = Number(process.env.OPT_PERCENT) || 0.1;
+const ROZN_PERCENT = Number(process.env.ROZN_PERCENT) || 0.3;
 
 function writeArrayToFile(array) {
   const data = JSON.stringify(array);
