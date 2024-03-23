@@ -14,6 +14,7 @@ const {
   contacts,
   users,
   clearFolder,
+  statistics,
 } = require("./commands");
 
 const token = process.env.BOT_TOKEN;
@@ -42,7 +43,8 @@ const setup = () => {
     async (ctx) => await startUpdateCron(ctx, bot)
   );
   bot.command("stopUpdateCron", stopUpdateCron);
-  bot.command("users", async (ctx) => await users(ctx, bot));
+  bot.command("users", async (ctx) => await users(ctx));
+  bot.command("statistics", async (ctx) => await statistics(ctx));
   bot.command("clearFolder", clearFolder);
 
   return bot;

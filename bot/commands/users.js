@@ -1,11 +1,9 @@
-const fs = require("fs");
-
 const { getUsers } = require("../../controllers");
 const { getUserInfo } = require("../utils");
 
 const ADMIN_ID = process.env.ADMIN_ID;
 
-const users = async (ctx, bot) => {
+const users = async (ctx) => {
   if (ADMIN_ID?.toString() === ctx.message.from.id?.toString()) {
     const { message_id } = await ctx.reply("Загрузка...");
     const users = await getUsers();

@@ -1,6 +1,6 @@
 const fs = require("fs");
 
-const { createUser } = require("../../controllers");
+const { createUser, saveDownloadHistory } = require("../../controllers");
 
 const ADMIN_ID = process.env.ADMIN_ID;
 
@@ -18,6 +18,11 @@ const downloadMiele = async (ctx, bot) => {
     ) || files.filter((file) => file.endsWith(".xlsx")).pop();
 
   if (xlsxFile) {
+    try {
+      if (user?.id?.toString() !== ADMIN_ID?.toString()) {
+        await saveDownloadHistory(user?.id);
+      }
+    } catch (error) {}
     return ctx.replyWithDocument({ source: `./files/${xlsxFile}` });
   } else {
     try {

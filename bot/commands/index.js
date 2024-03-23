@@ -7,6 +7,7 @@ const { startUpdateCron, stopUpdateCron } = require("./cron");
 const { service } = require("./service");
 const { contacts } = require("./contacts");
 const { users } = require("./users");
+const { statistics } = require("./statistics");
 
 module.exports = {
   downloadMiele,
@@ -19,4 +20,5 @@ module.exports = {
   service,
   contacts,
   users,
+  statistics,
 };
