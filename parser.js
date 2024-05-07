@@ -70,10 +70,11 @@ async function updateItems(items) {
 
       const $ = cheerio.load(data);
 
-      const article =
-        $(".product__article")?.text()?.replace("Артикул:", "")?.trim() || "";
+      const articleText = $(".product__article")?.text();
+      const article = articleText?.split(":")[1]?.trim() || "";
 
       if (article) {
+        console.log("article", article);
         const updatedItem = { ...item };
         try {
           const { data: dataTeh } = await axios.get(
@@ -243,6 +244,8 @@ async function scrapeSite() {
       }
     });
   });
+
+  console.log("linksWithPages", linksWithPages?.length);
 
   const itemsPromises = await updateCatalog(linksWithPages);
 
