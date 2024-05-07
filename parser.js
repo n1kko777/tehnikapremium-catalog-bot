@@ -71,7 +71,7 @@ async function updateItems(items) {
       const $ = cheerio.load(data);
 
       const article =
-        $(".product__article")?.text()?.replace("Артикул: ", "")?.trim() || "";
+        $(".product__article")?.text()?.replace("Артикул:", "")?.trim() || "";
 
       if (article) {
         const updatedItem = { ...item };
