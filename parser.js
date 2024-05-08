@@ -17,6 +17,18 @@ axios.defaults.httpsAgent = new https.Agent({ keepAlive: true });
 const OPT_PERCENT = Number(process.env.OPT_PERCENT) || 0.1;
 const ROZN_PERCENT = Number(process.env.ROZN_PERCENT) || 0.3;
 
+function extractNumberFromString(inputString) {
+  // Используем регулярное выражение для поиска одного или более цифр
+  const regex = /\d+/g;
+  let match;
+
+  // Проходим по всем найденным совпадениям
+  while ((match = regex.exec(inputString)) !== null) {
+    // Возвращаем первое найденное число
+    return parseInt(match[0], 10);
+  }
+}
+
 function writeArrayToFile(array) {
   const data = JSON.stringify(array);
   fs.writeFile(`./files/data_${new Date().toISOString()}.json`, data, (err) => {
@@ -229,8 +241,11 @@ async function scrapeSite() {
       if (res.status === "fulfilled") {
         const $ = cheerio.load(res.value.data);
 
-        const catalogTitle =
-          $(".catalog__header .catalog__title")?.text()?.split(" ")[1] || "0";
+        const catalogText =
+          $(".catalog__header .catalog__title")?.text() || "0";
+
+        const catalogTitle = extractNumberFromString(catalogText);
+
         const totalPages = Math.round(Number(catalogTitle) / 24);
 
         if (totalPages > 1) {
