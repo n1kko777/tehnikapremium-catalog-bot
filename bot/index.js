@@ -1,4 +1,5 @@
 const { Telegraf } = require("telegraf");
+
 const dotenv = require("dotenv");
 
 dotenv.config();
@@ -15,6 +16,7 @@ const {
   users,
   clearFolder,
   statistics,
+  broadcast,
 } = require("./commands");
 
 const token = process.env.BOT_TOKEN;
@@ -45,6 +47,7 @@ const setup = () => {
   bot.command("stopUpdateCron", stopUpdateCron);
   bot.command("users", async (ctx) => await users(ctx));
   bot.command("statistics", async (ctx) => await statistics(ctx));
+  bot.command("notify", async (ctx) => await broadcast(ctx));
   bot.command("clearFolder", clearFolder);
 
   return bot;

@@ -8,6 +8,7 @@ const { service } = require("./service");
 const { contacts } = require("./contacts");
 const { users } = require("./users");
 const { statistics } = require("./statistics");
+const { broadcast } = require("./broadcast");
 
 module.exports = {
   downloadMiele,
@@ -21,4 +22,5 @@ module.exports = {
   contacts,
   users,
   statistics,
+  broadcast,
 };
