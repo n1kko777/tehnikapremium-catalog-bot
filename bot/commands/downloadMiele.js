@@ -4,7 +4,7 @@ const { createUser, saveDownloadHistory } = require("../../controllers");
 
 const ADMIN_ID = process.env.ADMIN_ID;
 
-const downloadMiele = async (ctx, bot) => {
+const downloadMiele = async (ctx) => {
   const user = ctx?.update?.callback_query?.from || ctx?.message?.from;
 
   await createUser(user);
@@ -27,7 +27,7 @@ const downloadMiele = async (ctx, bot) => {
   } else {
     try {
       if (ADMIN_ID?.toString() !== user?.id?.toString()) {
-        bot.telegram.sendMessage(
+        ctx.telegram.sendMessage(
           ADMIN_ID,
           "Не удалось найти файл для скачивания!"
         );

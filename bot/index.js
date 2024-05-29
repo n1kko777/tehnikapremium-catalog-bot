@@ -31,11 +31,19 @@ const setup = () => {
   bot.use(Telegraf.log());
 
   bot.start(async (ctx) => await start(ctx));
-  bot.command("download", downloadMiele);
+  bot.command("download", async (ctx) => await downloadMiele(ctx));
   bot.command("service", service);
   bot.command("contacts", contacts);
 
-  bot.action("downloadMiele", async (ctx) => await downloadMiele(ctx, bot));
+  bot.action("downloadMiele", async (ctx) => await downloadMiele(ctx));
+
+  bot.action("statToday", async (ctx) => await statistics(ctx, "today"));
+  bot.action(
+    "statYesterday",
+    async (ctx) => await statistics(ctx, "yesterday")
+  );
+  bot.action("statWeek", async (ctx) => await statistics(ctx, "week"));
+  bot.action("statMonth", async (ctx) => await statistics(ctx, "month"));
 
   // admin
   bot.command("currency", async (ctx) => await currency(ctx));
