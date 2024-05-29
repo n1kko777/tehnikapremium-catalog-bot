@@ -36,6 +36,7 @@ const statistics = async (ctx, period = "all") => {
     const userList = users
       .filter(({ user }) => user?.id?.toString() !== ADMIN_ID?.toString())
       .sort(sortItemsByClickCountDescending)
+      .filter(({ clickCount }) => clickCount !== 0)
       .map(({ user, clickCount }) => `- ${getUserInfo(user)} (${clickCount})`)
       .join("\n");
     ctx.deleteMessage(message_id);
