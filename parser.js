@@ -16,6 +16,7 @@ axios.defaults.httpsAgent = new https.Agent({ keepAlive: true });
 
 const OPT_PERCENT = Number(process.env.OPT_PERCENT) || 0.1;
 const ROZN_PERCENT = Number(process.env.ROZN_PERCENT) || 0.3;
+const isOldFilter = process.env.IS_OLD_FILTER ?? 1;
 
 function extractNumberFromString(inputString) {
   // Используем регулярное выражение для поиска одного или более цифр
@@ -62,8 +63,6 @@ function getAllLinks(data) {
 }
 
 function getDeliveryByStatus(status) {
-  const isOldFilter = process.env.IS_OLD_FILTER ?? 1;
-
   if (status === "В наличии") {
     return "1 месяц";
   }
