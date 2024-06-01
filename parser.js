@@ -62,6 +62,8 @@ function getAllLinks(data) {
 }
 
 function getDeliveryByStatus(status) {
+  const isOldFilter = process.env.IS_OLD_FILTER ?? 1;
+
   if (status === "В наличии") {
     return "1 месяц";
   }
@@ -70,7 +72,7 @@ function getDeliveryByStatus(status) {
     return "2 месяца";
   }
 
-  return "более 2х месяцев";
+  return Boolean(isOldFilter) ? "" : "более 2х месяцев";
 }
 
 async function updateItems(items) {
@@ -146,6 +148,8 @@ async function updateCatalog(items) {
         const priceRubRozn = roundNumberToThousands(price, cur, ROZN_PERCENT);
         const status = $(elem).find(".snippet__status").text();
         const delivery = getDeliveryByStatus(status);
+
+        if (!delivery) return;
 
         results.push({
           imgSrc: `https://shop.miele.kz${imgSrc}`,
