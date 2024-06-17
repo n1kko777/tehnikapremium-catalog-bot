@@ -6,6 +6,12 @@ const inlineButtonConfig = {
   ...Markup.inlineKeyboard([
     [Markup.button.url("Посетить сайт", "https://tehnikapremium.ru/")],
     [Markup.button.callback("Скачать прайс-лист Miele", "downloadMiele")],
+    [
+      Markup.button.callback(
+        "Скачать прайс-листы других брендов",
+        "downloadPrices"
+      ),
+    ],
   ]),
 };
 

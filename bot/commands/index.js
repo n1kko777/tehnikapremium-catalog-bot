@@ -9,6 +9,8 @@ const { contacts } = require("./contacts");
 const { users } = require("./users");
 const { statistics } = require("./statistics");
 const { broadcast } = require("./broadcast");
+const { files } = require("./files");
+const { downloadPrices } = require("./downloadPrices");
 
 module.exports = {
   downloadMiele,
@@ -23,4 +25,6 @@ module.exports = {
   users,
   statistics,
   broadcast,
+  files,
+  downloadPrices,
 };

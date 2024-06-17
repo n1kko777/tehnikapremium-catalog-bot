@@ -11,11 +11,10 @@ const downloadMiele = async (ctx) => {
 
   const files = fs.readdirSync("./files");
   const xlsxFile =
-    files.find(
-      (file) =>
-        file.includes(new Date().toLocaleDateString("ru-RU")) &&
-        file.endsWith(".xlsx")
-    ) || files.filter((file) => file.endsWith(".xlsx")).pop();
+    files
+      .filter((file) => file.endsWith(".xlsx"))
+      .find((file) => file.includes(new Date().toLocaleDateString("ru-RU"))) ||
+    files.filter((file) => file.endsWith(".xlsx")).pop();
 
   if (xlsxFile) {
     try {

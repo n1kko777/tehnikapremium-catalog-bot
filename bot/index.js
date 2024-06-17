@@ -17,6 +17,8 @@ const {
   clearFolder,
   statistics,
   broadcast,
+  files,
+  downloadPrices,
 } = require("./commands");
 
 const token = process.env.BOT_TOKEN;
@@ -32,10 +34,12 @@ const setup = () => {
 
   bot.start(async (ctx) => await start(ctx));
   bot.command("download", async (ctx) => await downloadMiele(ctx));
+  bot.command("prices", async (ctx) => await downloadPrices(ctx));
   bot.command("service", service);
   bot.command("contacts", contacts);
 
   bot.action("downloadMiele", async (ctx) => await downloadMiele(ctx));
+  bot.action("downloadPrices", async (ctx) => await downloadPrices(ctx));
 
   bot.action("statToday", async (ctx) => await statistics(ctx, "today"));
   bot.action(
@@ -57,6 +61,9 @@ const setup = () => {
   bot.command("statistics", async (ctx) => await statistics(ctx));
   bot.command("notify", async (ctx) => await broadcast(ctx));
   bot.command("clearFolder", clearFolder);
+
+  // manager
+  bot.command("files", async (ctx) => await files(ctx));
 
   return bot;
 };
