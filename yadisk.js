@@ -12,7 +12,8 @@ const path = require("path");
 dotenv.config();
 
 const savePath = __dirname + "/files/temp";
-const targetPath = __dirname + "/files/prices";
+const pricesPath = __dirname + "/files/prices";
+const catalogsPath = __dirname + "/files/catalogs";
 
 const clearDirectory = (dir) => {
   if (!fs.existsSync(dir)) {
@@ -26,16 +27,19 @@ const clearDirectory = (dir) => {
       return;
     }
 
-    files.forEach((file) => {
-      const filePath = path.join(dir, file);
-      fs.unlink(filePath, (err) => {
-        if (err) {
-          console.error(`Error deleting file ${file}: ${err}`);
-        } else {
-          console.log(`Deleted file: ${file}`);
-        }
+    files
+      .filter((file) => file.includes("."))
+      .forEach((file) => {
+        const filePath = path.join(dir, file);
+
+        fs.unlink(filePath, (err) => {
+          if (err) {
+            console.error(`Error deleting file ${file}: ${err}`);
+          } else {
+            console.log(`Deleted file: ${file}`);
+          }
+        });
       });
-    });
   });
 };
 
@@ -82,11 +86,20 @@ async function yadisk(onReply) {
     const zip = new AdmZip(`${savePath}/${downloadFileName}`);
     zip.extractAllTo(savePath);
 
-    clearDirectory(targetPath);
+    clearDirectory(pricesPath);
+    clearDirectory(catalogsPath);
 
     setTimeout(() => {
-      moveFiles(`${savePath}/tehnikapremium-catalog-bot`, targetPath);
+      moveFiles(`${savePath}/tehnikapremium-catalog-bot/prices`, pricesPath);
+      moveFiles(
+        `${savePath}/tehnikapremium-catalog-bot/catalogs`,
+        catalogsPath
+      );
     }, 1000);
+
+    setTimeout(() => {
+      clearDirectory(savePath);
+    }, 3000);
 
     onReply("Файлы обновлены успешно!");
   } catch (error) {

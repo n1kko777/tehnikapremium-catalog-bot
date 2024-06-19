@@ -11,6 +11,7 @@ const { statistics } = require("./statistics");
 const { broadcast } = require("./broadcast");
 const { files } = require("./files");
 const { downloadPrices } = require("./downloadPrices");
+const { downloadCatalogs } = require("./downloadCatalogs");
 
 module.exports = {
   downloadMiele,
@@ -27,4 +28,5 @@ module.exports = {
   broadcast,
   files,
   downloadPrices,
+  downloadCatalogs,
 };

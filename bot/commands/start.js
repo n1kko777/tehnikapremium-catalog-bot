@@ -12,6 +12,7 @@ const inlineButtonConfig = {
         "downloadPrices"
       ),
     ],
+    [Markup.button.callback("Скачать каталоги", "downloadCatalogs")],
   ]),
 };
 
