@@ -11,8 +11,14 @@ const { parentPort } = require("worker_threads");
 const { scrapeCurrency } = require("./currency");
 const { convertJsonToExcel } = require("./convertJsonToExcel");
 
+// At request level
+const agent = new https.Agent({
+  rejectUnauthorized: false,
+  keepAlive: true,
+});
+
 axios.defaults.timeout = 30000;
-axios.defaults.httpsAgent = new https.Agent({ keepAlive: true });
+axios.defaults.httpsAgent = agent;
 
 const OPT_PERCENT = Number(process.env.OPT_PERCENT) || 0.1;
 const ROZN_PERCENT = Number(process.env.ROZN_PERCENT) || 0.3;
