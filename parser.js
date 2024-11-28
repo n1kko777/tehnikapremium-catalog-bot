@@ -1,12 +1,12 @@
+const { parentPort } = require("worker_threads");
 const axios = require("axios");
 const https = require("https");
 const cheerio = require("cheerio");
-const fs = require("fs");
 const dotenv = require("dotenv");
 
 dotenv.config();
 
-const { parentPort } = require("worker_threads");
+const { Product } = require("./models");
 
 const { scrapeCurrency } = require("./currency");
 const { convertJsonToExcel } = require("./convertJsonToExcel");
@@ -36,15 +36,32 @@ function extractNumberFromString(inputString) {
   }
 }
 
-function writeArrayToFile(array) {
-  const data = JSON.stringify(array);
-  fs.writeFile(`./files/data_${new Date().toISOString()}.json`, data, (err) => {
-    if (err) {
-      console.error(err);
-      return;
+async function writeArrayToDb(dataArray) {
+  try {
+    for (let data of dataArray) {
+      const existingRecord = await Product.findOne({
+        where: { article: data.article },
+      });
+
+      if (!existingRecord) {
+        await Product.create(data);
+      } else {
+        const shouldUpdate = Object.keys(data).some((key) => {
+          return (
+            key !== "article" &&
+            key !== "date" &&
+            existingRecord[key] !== data[key]
+          ); // Исключаем поля article и date из сравнения
+        });
+
+        if (shouldUpdate) {
+          await Product.update(data, { where: { article: data.article } });
+        }
+      }
     }
-    console.log("Данные успешно записан в файл data.json");
-  });
+  } catch (error) {
+    console.error(`Error processing ${data.article}:`, error);
+  }
 }
 
 function roundNumberToThousands(num, curr = 5.05, proc = 0.05) {
@@ -273,7 +290,7 @@ async function scrapeSite() {
   const items = await updateItems(itemsPromises);
 
   if (items?.length > 0) {
-    writeArrayToFile(items);
+    writeArrayToDb(items);
     convertJsonToExcel(items);
 
     if (parentPort) {

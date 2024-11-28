@@ -20,6 +20,7 @@ const {
   files,
   downloadPrices,
   downloadCatalogs,
+  search,
 } = require("./commands");
 
 const token = process.env.BOT_TOKEN;
@@ -39,6 +40,8 @@ const setup = () => {
   bot.command("catalogs", async (ctx) => await downloadCatalogs(ctx));
   bot.command("service", service);
   bot.command("contacts", contacts);
+  bot.command("search", async (ctx) => await search(ctx));
+  bot.command("s", async (ctx) => await search(ctx));
 
   bot.action("downloadMiele", async (ctx) => await downloadMiele(ctx));
   bot.action("downloadPrices", async (ctx) => await downloadPrices(ctx));

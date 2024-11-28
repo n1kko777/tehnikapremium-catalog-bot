@@ -12,6 +12,7 @@ const { broadcast } = require("./broadcast");
 const { files } = require("./files");
 const { downloadPrices } = require("./downloadPrices");
 const { downloadCatalogs } = require("./downloadCatalogs");
+const { search } = require("./search");
 
 module.exports = {
   downloadMiele,
@@ -29,4 +30,5 @@ module.exports = {
   files,
   downloadPrices,
   downloadCatalogs,
+  search,
 };
