@@ -17,7 +17,7 @@ const agent = new https.Agent({
   keepAlive: true,
 });
 
-axios.defaults.timeout = 30000;
+axios.defaults.timeout = 45000;
 axios.defaults.httpsAgent = agent;
 
 const OPT_PERCENT = Number(process.env.OPT_PERCENT) || 0.1;
