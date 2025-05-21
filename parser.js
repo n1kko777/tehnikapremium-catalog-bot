@@ -160,19 +160,20 @@ async function updateCatalog(items) {
         const price =
           Number(
             $(elem)
-              .find(".snippet__price")
+              .find(".snippet__price-value")
               ?.text()
               ?.replace("₸", "")
               ?.trim()
               ?.replace(/\s/g, "")
           ) ?? 0;
-        const priceRubOpt = roundNumberToThousands(price, cur, OPT_PERCENT);
-        const priceRubRozn = roundNumberToThousands(price, cur, ROZN_PERCENT);
         const status = $(elem).find(".snippet__status").text();
         const delivery = getDeliveryByStatus(status);
 
-        if (!delivery) return;
-
+        if (!delivery || Number.isNaN(price)) return;
+        
+        const priceRubOpt = roundNumberToThousands(price, cur, OPT_PERCENT);
+        const priceRubRozn = roundNumberToThousands(price, cur, ROZN_PERCENT);
+        
         results.push({
           imgSrc: `https://shop.miele.kz${imgSrc}`,
           linkKz: `https://shop.miele.kz${linkKz}`,
