@@ -40,7 +40,8 @@ const initialize = async () => {
     });
   } catch (err) {
     fastify.log.error(err);
-    bot.telegram.sendMessage(ADMIN_ID, `Error fastify: ${err}`);
+    const errorMsg = `Error fastify: ${err}`.substring(0, 4096);
+    bot.telegram.sendMessage(ADMIN_ID, errorMsg);
     process.exit(1);
   }
 };

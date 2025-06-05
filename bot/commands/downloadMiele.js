@@ -10,11 +10,24 @@ const downloadMiele = async (ctx) => {
   await createUser(user);
 
   const files = fs.readdirSync("./files");
-  const xlsxFile =
-    files
+
+  let xlsxFile = null;
+  const today = new Date();
+
+  // Check for files from today and the past 6 days
+  for (let i = 0; i < 7; i++) {
+    const date = new Date(today);
+    date.setDate(today.getDate() - i);
+    const formattedDate = date.toLocaleDateString("ru-RU");
+    const foundFile = files
       .filter((file) => file.endsWith(".xlsx"))
-      .find((file) => file.includes(new Date().toLocaleDateString("ru-RU"))) ||
-    files.filter((file) => file.endsWith(".xlsx")).pop();
+      .find((file) => file.includes(formattedDate));
+
+    if (foundFile) {
+      xlsxFile = foundFile;
+      break;
+    }
+  }
 
   if (xlsxFile) {
     try {

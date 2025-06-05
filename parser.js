@@ -60,7 +60,7 @@ async function writeArrayToDb(dataArray) {
       }
     }
   } catch (error) {
-    console.error(`Error processing ${data.article}:`, error);
+    console.error(`Error processing:`, error);
   }
 }
 
@@ -170,10 +170,10 @@ async function updateCatalog(items) {
         const delivery = getDeliveryByStatus(status);
 
         if (!delivery || Number.isNaN(price)) return;
-        
+
         const priceRubOpt = roundNumberToThousands(price, cur, OPT_PERCENT);
         const priceRubRozn = roundNumberToThousands(price, cur, ROZN_PERCENT);
-        
+
         results.push({
           imgSrc: `https://shop.miele.kz${imgSrc}`,
           linkKz: `https://shop.miele.kz${linkKz}`,
@@ -196,6 +196,17 @@ async function updateCatalog(items) {
   }
 
   return results;
+}
+
+async function fetchWithRetry(url, retries = 3) {
+  for (let i = 0; i < retries; i++) {
+    try {
+      return await axios.get(url);
+    } catch (err) {
+      if (i === retries - 1) throw err;
+      await new Promise((r) => setTimeout(r, 1000));
+    }
+  }
 }
 
 async function scrapeSite() {
@@ -255,7 +266,7 @@ async function scrapeSite() {
   links.forEach((item) => {
     linksPromises.push(
       new Promise(async (resolve, reject) => {
-        const { data } = await axios.get(item);
+        const { data } = await fetchWithRetry(item);
         resolve({ data, link: item });
       })
     );
