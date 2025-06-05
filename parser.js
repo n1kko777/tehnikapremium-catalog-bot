@@ -24,6 +24,17 @@ const OPT_PERCENT = Number(process.env.OPT_PERCENT) || 0.1;
 const ROZN_PERCENT = Number(process.env.ROZN_PERCENT) || 0.3;
 const isOldFilter = process.env.IS_OLD_FILTER ?? 1;
 
+async function fetchWithRetry(url, retries = 3) {
+  for (let i = 0; i < retries; i++) {
+    try {
+      return await axios.get(url);
+    } catch (err) {
+      if (i === retries - 1) throw err;
+      await new Promise((r) => setTimeout(r, 1000));
+    }
+  }
+}
+
 function extractNumberFromString(inputString) {
   // Используем регулярное выражение для поиска одного или более цифр
   const regex = /\d+/g;
@@ -102,7 +113,7 @@ async function updateItems(items) {
 
   for (const item of items) {
     try {
-      const { data } = await axios.get(item.linkKz);
+      const { data } = await fetchWithRetry(item.linkKz);
 
       const $ = cheerio.load(data);
 
@@ -112,7 +123,7 @@ async function updateItems(items) {
       if (article) {
         const updatedItem = { ...item };
         try {
-          const { data: dataTeh } = await axios.get(
+          const { data: dataTeh } = await fetchWithRetry(
             `https://tehnikapremium.ru/catalog/?q=${article}&s=Найти`
           );
           const $ = cheerio.load(dataTeh);
@@ -149,7 +160,7 @@ async function updateCatalog(items) {
 
   for (const item of items) {
     try {
-      const { data } = await axios.get(item);
+      const { data } = await fetchWithRetry(item);
       const $ = cheerio.load(data);
 
       $(".catalog-list .snippet").each((i, elem) => {
@@ -198,21 +209,10 @@ async function updateCatalog(items) {
   return results;
 }
 
-async function fetchWithRetry(url, retries = 3) {
-  for (let i = 0; i < retries; i++) {
-    try {
-      return await axios.get(url);
-    } catch (err) {
-      if (i === retries - 1) throw err;
-      await new Promise((r) => setTimeout(r, 1000));
-    }
-  }
-}
-
 async function scrapeSite() {
   const url = `https://shop.miele.kz/catalog/`;
 
-  const { data } = await axios.get(url);
+  const { data } = await fetchWithRetry(url);
   const $ = cheerio.load(data);
 
   const categories = [];
@@ -233,7 +233,7 @@ async function scrapeSite() {
   categories.forEach((item) => {
     subCategoriesPromises.push(
       new Promise(async (resolve, reject) => {
-        const { data } = await axios.get(item.link);
+        const { data } = await fetchWithRetry(item.link);
         resolve(data);
       })
     );
